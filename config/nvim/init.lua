@@ -1,6 +1,5 @@
 require("config.lazy")
 
-
 -- Disable some providers
 vim.g.loaded_node_provider=0
 vim.g.loaded_perl_provider=0
@@ -27,7 +26,13 @@ vim.keymap.set('n', '<leader>fb', telescope.buffers, { desc = 'Telescope buffers
 vim.keymap.set('n', '<leader>fh', telescope.help_tags, { desc = 'Telescope help tags' })
 
 -- Terminal
-vim.keymap.set('t', '<Esc>', '<C-\\><C-n>', { remap = true })
-vim.keymap.set('n', '<leader>h', ':bel terminal<CR>')
+
+local toggleterm = require("toggleterm")
+vim.keymap.set('n', '<leader>t', function() toggleterm.toggle_command('direction=float', 1) end)
+vim.keymap.set('n', '<leader>h', function() toggleterm.toggle_command('direction=horizontal', 1) end)
+vim.keymap.set('n', '<leader>v', function() toggleterm.toggle_command('direction=vertical', 1) end)
+vim.keymap.set('t', '<Esc>', toggleterm.toggle, { remap = true })
+vim.keymap.set('t', '<C-x>', '<C-\\><C-n>', { remap = true })
+
 vim.api.nvim_command("autocmd TermOpen * setlocal nonumber norelativenumber")
 
