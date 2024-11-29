@@ -7,6 +7,31 @@ local handlers = {
   end,
 }
 
+-- use tab to scroll forward and shift-tab to scroll back
+local cmpMappings = {
+    ['<Tab>'] = function(fallback)
+      cmp = require("cmp")
+      if not cmp.select_next_item() then
+        if vim.bo.buftype ~= 'prompt' and has_words_before() then
+          cmp.complete()
+        else
+          fallback()
+        end
+      end
+    end,
+    ['<S-Tab>'] = function(fallback)
+      cmp = require("cmp")
+      if not cmp.select_prev_item() then
+        if vim.bo.buftype ~= 'prompt' and has_words_before() then
+          cmp.complete()
+        else
+          fallback()
+        end
+      end
+    end,
+}
+
+
 -- load mason and lspconfig in one hook, as described in https://github.com/williamboman/mason-lspconfig.nvim
 return {
   {
@@ -33,7 +58,8 @@ return {
                 { name = 'nvim_lsp' },
                 { name = 'buffer' },
                 { name = 'path' },
-            }
+            },
+            mapping = cmpMappings
         }
     end,
   },
