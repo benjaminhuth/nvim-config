@@ -1,4 +1,4 @@
 #!/bin/bash
 
-rm -r $HOME/.config/nvim
-cp -r config/nvim $HOME/.config
+rm -fr $HOME/.config/nvim
+cp -fr config/nvim $HOME/.config

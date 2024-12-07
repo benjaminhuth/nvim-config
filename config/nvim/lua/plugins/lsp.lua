@@ -61,6 +61,11 @@ return {
     event = "InsertEnter",
     config = function() 
         require("cmp").setup{
+            snippet = {
+                expand = function(args)
+                    vim.snippet.expand(args.body) -- For native neovim snippets (Neovim v0.10+)
+                end,
+            },
             sources = { 
                 { name = 'nvim_lsp' },
                 { name = 'buffer' },
@@ -68,6 +73,7 @@ return {
             },
             mapping = cmpMappings
         }
+        vim.opt.pumheight = 10 -- limit completion items
     end,
   },
   {
