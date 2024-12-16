@@ -41,3 +41,8 @@ vim.keymap.set("t", "<Esc>", toggleterm.toggle, { remap = true })
 vim.keymap.set("t", "<C-x>", "<C-\\><C-n>", { remap = true })
 
 vim.api.nvim_command("autocmd TermOpen * setlocal nonumber norelativenumber")
+
+
+-- Buffer switch with tabs
+vim.keymap.set('n', '<S-Tab>', '<Cmd>BufferPrevious<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<Tab>', '<Cmd>BufferNext<CR>', { noremap = true, silent = true })
