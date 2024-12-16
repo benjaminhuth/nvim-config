@@ -16,8 +16,16 @@ local has_words_before = function()
 end
 
 local cmpMappings = {
+    ['<C-i>'] = function(fallback)
+      local cmp = require("cmp")
+      cmp.mapping.confirm {
+            behavior = cmp.ConfirmBehavior.Insert,
+            select = true,
+      }
+    end,
+
     ['<Tab>'] = function(fallback)
-      cmp = require("cmp")
+      local cmp = require("cmp")
       if not cmp.select_next_item() then
         if vim.bo.buftype ~= 'prompt' and has_words_before() then
           cmp.complete()
@@ -26,8 +34,9 @@ local cmpMappings = {
         end
       end
     end,
+
     ['<S-Tab>'] = function(fallback)
-      cmp = require("cmp")
+      local cmp = require("cmp")
       if not cmp.select_prev_item() then
         if vim.bo.buftype ~= 'prompt' and has_words_before() then
           cmp.complete()
