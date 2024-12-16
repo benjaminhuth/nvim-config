@@ -38,4 +38,7 @@ require("lazy").setup({
         notify = false,
         frequency = 7*24*60*60 -- every week?
     },
+    install = {
+      colorscheme = { "catppuccin" },
+    },
 })

@@ -26,23 +26,30 @@ vim.keymap.set("n", "<leader>fb", telescope.buffers, { desc = "Telescope buffers
 vim.keymap.set("n", "<leader>fh", telescope.help_tags, { desc = "Telescope help tags" })
 
 -- Terminal
-
 local toggleterm = require("toggleterm")
 vim.keymap.set("n", "<leader>t", function()
 	toggleterm.toggle_command("direction=float", 1)
-end)
+end, { desc = "Overlay terminal" })
 vim.keymap.set("n", "<leader>h", function()
 	toggleterm.toggle_command("direction=horizontal", 1)
-end)
+end, { desc = "Horizontal terminal" })
 vim.keymap.set("n", "<leader>v", function()
 	toggleterm.toggle_command("direction=vertical", 1)
-end)
+end, { desc = "Vertical terminal" })
+
 vim.keymap.set("t", "<Esc>", toggleterm.toggle, { remap = true })
 vim.keymap.set("t", "<C-x>", "<C-\\><C-n>", { remap = true })
 
 vim.api.nvim_command("autocmd TermOpen * setlocal nonumber norelativenumber")
 
-
 -- Buffer switch with tabs
 vim.keymap.set('n', '<S-Tab>', '<Cmd>BufferPrevious<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<Tab>', '<Cmd>BufferNext<CR>', { noremap = true, silent = true })
+
+-- Dont continue comments in next line
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "*",
+  callback = function()
+    vim.opt_local.formatoptions:remove({ 'r', 'o' })
+  end,
+})

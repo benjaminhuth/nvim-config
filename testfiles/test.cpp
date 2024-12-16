@@ -11,5 +11,11 @@ int main() {
     std::for_each(v.begin(), v.end(), [](int i) { std::cout << i << std::endl; });
     
     MyClass a;
-    a.myVeryLongMethodName();
+
+    // fill a vector with random floats
+    std::vector<float> vec(10);
+    std::generate(vec.begin(), vec.end(), []() { return rand() % 100; });
+
+    // print the vector
+    std::for_each(vec.begin(), vec.end(), [](float f) { std::cout << f << std::endl; });
 }

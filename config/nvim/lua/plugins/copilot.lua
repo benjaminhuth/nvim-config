@@ -6,11 +6,12 @@ return {
 				enabled = true,
 				keymap = {
 					accept = "<C-l>",
+                    next = "<C-o>", -- this is very german
 				},
 			},
-			panel = { enabled = true },
+			panel = { enabled = false },
 		})
-		vim.keymap.set("n", "<C-k>", function()
+		vim.keymap.set({"n", "i"}, "<C-k>", function()
 			require("copilot.suggestion").toggle_auto_trigger()
 		end)
 	end,
