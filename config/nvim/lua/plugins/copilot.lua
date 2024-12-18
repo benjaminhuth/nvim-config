@@ -11,7 +11,7 @@ return {
 			},
 			panel = { enabled = false },
 		})
-		vim.keymap.set({"n", "i"}, "<leader>k", function()
+		vim.keymap.set("n", "<leader>k", function()
 			require("copilot.suggestion").toggle_auto_trigger()
 		end, { desc = "Toggle Copilot" })
 	end,
