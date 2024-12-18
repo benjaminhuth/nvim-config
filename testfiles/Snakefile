@@ -1,0 +1,168 @@
+from pathlib import Path
+
+envvars:
+    "ATLAS_LOCAL_ROOT_BASE",
+
+max_events = config["max_events"]
+data_dir = Path(config["data_dir"])
+assert data_dir.exists()
+print("Data dir:",data_dir.resolve().absolute())
+
+# Here we escape the number with {{n}}, so that we can insert pt and afterwards use it for globbing
+dataset_template = "mc21_14TeV.{{n}}.PG_single_epm_Pt{}_eta{{e}}.recon.RDO.{{postfix}}"
+
+# Helper function to collect RDO files for given pt value
+def get_input_rdos(wildcards):
+    dataset = data_dir / dataset_template.format(wildcards.pt)
+    numbers, etas, postfix, root_files = glob_wildcards(str(dataset / "{f}.root.1"))
+    assert len(root_files) > 0
+    input_files = [ str(dataset / "{f}.root.1").format(n=n,e=e,postfix=p,f=f) for n, e, p, f in zip(numbers, etas, postfix, root_files) ]
+    for f in input_files: 
+        assert wildcards.pt in f
+    return input_files
+
+def eval_athena_use_mode(merge_method):
+    if merge_method == "mean":
+        return False
+    elif merge_method == "mode" or merge_method == "maxWeight":
+        return True
+    else:
+        raise RuntimeError(f"Unsupported merge method '{merge_method}'")
+
+rule run_gsf_acts:
+    input:
+        get_input_rdos
+    output:
+        "outputs/acts_{nav}Nav_{pt}GeV_{cmps}_{merge}_{chi2}chi2_AOD.pool.root"
+    log:
+        "logs/acts_{nav}Nav_{pt}GeV_{cmps}_{merge}_{chi2}chi2.log",
+    params:
+        directNav = lambda wildcards: True if wildcards.nav == "direct" else False
+    shell:
+        'Reco_tf.py '
+        '--preExec '
+        '   "flags.Exec.FPE=-2;" '
+        '   "flags.Acts.useActsGsfInEgamma=True;" '
+        '   "flags.Acts.GsfMaxComponents={wildcards.cmps};" '
+        '   "flags.Acts.GsfDirectNavigation={params.directNav};" '
+        '   "flags.Acts.GsfComponentMergeMethod=\'{wildcards.merge}\';" '
+        '   "flags.Acts.GsfOutlierChi2Cut={wildcards.chi2};" '
+        '   "flags.Acts.GsfBhaPath=\'/home/bhuth/gsf/with_athena/athena/Tracking/TrkFitter/TrkGaussianSumFilter/Data\';" '
+        '--preInclude egammaConfig.ConfigurationHelpers.egammaOnlyFromRaw '
+        '--autoConfiguration="everything" '
+        '--inputRDOFile {input} '
+        '--outputAODFile {output} '
+        '--maxEvents {max_events} '
+        '--multithreaded '
+        '--ignoreErrors=true '
+        ' | tee logs/acts_{wildcards.pt}GeV_{wildcards.cmps}_{wildcards.merge}.log '
+
+rule run_gsf_athena:
+    input:
+        get_input_rdos
+    output:
+        "outputs/athena_{pt}GeV_{cmps}_{merge}_AOD.pool.root"
+    log:
+        "logs/athena_{pt}GeV_{cmps}_{merge}.log"
+    params:
+        use_mode = lambda wildcards: eval_athena_use_mode(wildcards.merge)
+    shell:
+        'Reco_tf.py '
+        '--preExec '
+        '   "flags.Exec.FPE=-2;" '
+        '   "flags.Acts.useActsGsfInEgamma=False;" '
+        '   "flags.Tracking.legacyGsfUseMode={params.use_mode}; " '
+        '   "flags.Tracking.legacyGsfMaxComponents={wildcards.cmps}; " '
+        '--preInclude egammaConfig.ConfigurationHelpers.egammaOnlyFromRaw '
+        '--autoConfiguration="everything" '
+        '--inputRDOFile {input} '
+        '--outputAODFile {output} '
+        '--maxEvents {max_events} '
+        '--multithreaded '
+        '--ignoreErrors=true '
+        ' | tee logs/athena_{wildcards.pt}GeV_{wildcards.cmps}_{wildcards.merge}.log '
+
+rule egamma_monitoring:
+    input:
+        "outputs/{prefix}_AOD.pool.root"
+    output:
+        "outputs/{prefix}_egamma.root"
+    run:
+        shell("runegammaMonitoring.py -i {input} -o {output}")
+        shell("mv {output}.root {output}")
+
+rule idpvm:
+    input:
+        "outputs/{prefix}_AOD.pool.root"
+    output:
+        "outputs/{prefix}_idpvm.root"
+    shell:
+        "runIDPVM.py "
+        "    --filesInput {input} "
+        "    --validateExtraTrackCollections GSFTrackParticles "
+        "    --outputFile {output} "
+
+rule make_flat_ntuple:
+    input:
+        "outputs/{prefix}_AOD.pool.root"
+    output:
+        "outputs/{prefix}_flat.root"
+    shell:
+        "runTRKAnalysis.py -i {input} -o {output}"
+
+rule plot_idpvm:
+    params:
+        plot_indet=lambda wc: True if wc.indet == "withInDet" else False,
+    input:
+        "outputs/acts_{nav}Nav_{params}_{chi2}chi2_idpvm.root",
+        "outputs/athena_{params}_idpvm.root",
+    output:
+        "outputs/idpvm_report_{nav}Nav_{params}_{chi2}chi2_{indet}.pdf"
+    script:
+        "scripts/plot_idpvm.py"
+
+rule plot_nav_compare:
+    params:
+        plot_indet=lambda wc: True if wc.indet == "withInDet" else False,
+    input:
+        "outputs/acts_standardNav_{params}_idpvm.root",
+        "outputs/acts_directNav_{params}_idpvm.root",
+    output:
+        "outputs/idpvm_report_nav_compare_{params}_{indet}.pdf",
+    script:
+        "scripts/plot_idpvm.py"
+
+rule plot_athena_compare:
+    params:
+        plot_indet=False,
+    input:
+        "outputs/athena_{params}_mean_idpvm.root",
+        "outputs/athena_{params}_maxWeight_idpvm.root",
+    output:
+        "outputs/idpvm_report_ath_merge_compare_{params}.pdf",
+    script:
+        "scripts/plot_idpvm.py"
+
+rule plot_acts_compare:
+    params:
+        plot_indet=False,
+    input:
+        "outputs/acts_{nav}_{pt}GeV_{cmps}_mean_{chi2}chi2_idpvm.root",
+        "outputs/acts_{nav}_{pt}GeV_{cmps}_maxWeight_{chi2}chi2_idpvm.root",
+    output:
+        "outputs/idpvm_report_acts_merge_compare_{nav}_{pt}GeV_{cmps}_{chi2}chi2.pdf"
+    script:
+        "scripts/plot_idpvm.py"
+
+rule all:
+    default_target: True
+    input:
+        expand("outputs/acts_standardNav_{mom}GeV_12_mean_1e4chi2_noInDet", mom=[10, 100]),
+        expand("outputs/acts_standardNav_10GeV_12_{merge}_1e4chi2_noInDet", merge=["mean", "maxWeight"]),
+        expand("outputs/acts_standardNav_10GeV_12_mean_{chi2}chi2_noInDet", chi2=[20, 100, 1e4]),
+        "outputs/idpvm_report_nav_compare_10GeV_12_mean_1e4chi2_noInDet.pdf",
+        "outputs/idpvm_report_ath_merge_compare_10GeV_12.pdf",
+        "outputs/idpvm_report_acts_merge_compare_standardNav_10GeV_12_1e4chi2.pdf"
+        #"outputs/idpvm_report_standardNav_Flat20_100GeV_12_mean_1e4chi2_noInDet.pdf",
+        #"outputs/acts_standardNav_10GeV_12_maxWeight_1e4chi2_egamma.root",
+        #"outputs/athena_10GeV_12_mean_egamma.root",
