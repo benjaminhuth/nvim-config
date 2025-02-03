@@ -59,7 +59,7 @@ return {
 		dependencies = { "williamboman/mason.nvim" },
 		config = function()
 			require("mason-lspconfig").setup({ ensure_installed = { "clangd", "pylsp", "cmake" } })
-		end,
+    end,
 	},
 	{
 		"hrsh7th/nvim-cmp",
@@ -91,6 +91,22 @@ return {
 		dependencies = { "williamboman/mason-lspconfig.nvim", "hrsh7th/nvim-cmp" },
 		config = function()
 			require("mason-lspconfig").setup_handlers(handlers)
+      require'lspconfig'.pylsp.setup{
+        settings = {
+          pylsp = {
+            plugins = {
+              pycodestyle = {
+                ignore = {
+                  'E231', -- spaces after comma
+                  'E225', -- spaces around operators
+                  'E202'  -- whitespaces before ]
+                },
+                maxLineLength = 100
+              }
+            }
+          }
+        }
+      }
 		end,
 	},
 }
