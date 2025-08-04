@@ -18,4 +18,6 @@ int main() {
 
     // print the vector
     std::for_each(vec.begin(), vec.end(), [](float f) { std::cout << f << std::endl; });
+
+    MyClasss b{};
 }

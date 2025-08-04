@@ -1,5 +1,8 @@
 require("config.lazy")
 
+-- Recommended options from checkhealth (with localoptions)
+vim.o.sessionoptions="blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
+
 -- Disable some providers
 vim.g.loaded_node_provider = 0
 vim.g.loaded_perl_provider = 0
@@ -53,3 +56,6 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.opt_local.formatoptions:remove({ 'r', 'o' })
   end,
 })
+
+vim.diagnostic.config({ virtual_text = false, virtual_lines = { current_line = true }, }) 
+

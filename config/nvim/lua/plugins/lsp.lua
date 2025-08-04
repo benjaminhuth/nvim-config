@@ -46,21 +46,37 @@ local cmpMappings = {
 	end,
 }
 
+lspConfig = function()
+  vim.lsp.config('pylsp', {
+    settings = {
+      pylsp = {
+        plugins = {
+          pycodestyle = {
+            ignore = {
+              'E231', -- spaces after comma
+              'E225', -- spaces around operators
+              'E202'  -- whitespaces before ]
+            },
+            maxLineLength = 100
+          }
+        }
+      }
+    }
+  })
+end
+
 -- load mason and lspconfig in one hook, as described in https://github.com/williamboman/mason-lspconfig.nvim
 return {
-	{
-		"williamboman/mason.nvim",
-		config = function()
-			require("mason").setup()
-		end,
-	},
-	{
-		"williamboman/mason-lspconfig.nvim",
-		dependencies = { "williamboman/mason.nvim" },
-		config = function()
-			require("mason-lspconfig").setup({ ensure_installed = { "clangd", "pylsp", "cmake" } })
-    end,
-	},
+  {
+    "mason-org/mason-lspconfig.nvim",
+    opts = {
+        ensure_installed = { "clangd", "pylsp", "cmake", "bashls" },
+    },
+    dependencies = {
+      { "mason-org/mason.nvim", opts = {} },
+      { "neovim/nvim-lspconfig", config = lspConfig }
+    },
+  },
 	{
 		"hrsh7th/nvim-cmp",
 		dependencies = {
@@ -84,29 +100,6 @@ return {
 				mapping = cmpMappings,
 			})
 			vim.opt.pumheight = 10 -- limit completion items
-		end,
-	},
-	{
-		"neovim/nvim-lspconfig",
-		dependencies = { "williamboman/mason-lspconfig.nvim", "hrsh7th/nvim-cmp" },
-		config = function()
-			require("mason-lspconfig").setup_handlers(handlers)
-      require'lspconfig'.pylsp.setup{
-        settings = {
-          pylsp = {
-            plugins = {
-              pycodestyle = {
-                ignore = {
-                  'E231', -- spaces after comma
-                  'E225', -- spaces around operators
-                  'E202'  -- whitespaces before ]
-                },
-                maxLineLength = 100
-              }
-            }
-          }
-        }
-      }
 		end,
 	},
 }
