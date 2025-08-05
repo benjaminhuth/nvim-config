@@ -1,6 +1,8 @@
 return {
-	"romgrk/barbar.nvim",
-	dependencies = {
+	-- "romgrk/barbar.nvim",
+  "benjaminhuth/barbar.nvim",
+  branch = "fix/issue-647", -- fix for error on startup
+  dependencies = {
 		"lewis6991/gitsigns.nvim", -- OPTIONAL: for git status
 		"nvim-tree/nvim-web-devicons", -- OPTIONAL: for file icons
 	},
