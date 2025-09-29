@@ -55,7 +55,10 @@ lspConfig = function()
             ignore = {
               'E231', -- spaces after comma
               'E225', -- spaces around operators
-              'E202'  -- whitespaces before ]
+              'E201', -- whitespaces after [
+              'E202', -- whitespaces before ]
+              'E265', -- block comment with space
+              'E731', -- don't assign lambda
             },
             maxLineLength = 100
           }
