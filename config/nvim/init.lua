@@ -59,3 +59,4 @@ vim.api.nvim_create_autocmd("FileType", {
 
 vim.diagnostic.config({ virtual_text = false, virtual_lines = { current_line = true }, }) 
 
+vim.keymap.set('n', '<leader>d', vim.diagnostic.open_float, { desc = 'Expand [d]iagnostic message' })
