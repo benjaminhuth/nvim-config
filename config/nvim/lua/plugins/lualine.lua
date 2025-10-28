@@ -7,7 +7,7 @@ return {
 			sections = {
 				lualine_a = {},
 				lualine_b = { "branch", "diff", "diagnostics" },
-				lualine_c = { "filename" },
+				lualine_c = { {"filename", path = 1} },  -- path = 1: relative path
 				lualine_x = { "filetype" },
 				lualine_y = {},
 				lualine_z = { "location" },
