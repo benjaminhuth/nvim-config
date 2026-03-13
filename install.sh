@@ -8,5 +8,12 @@ else
     echo "XDG_CONFIG_HOME not set, using default: $CONFIG_DIR"
 fi
 
+read -p "Continue? (y/n) " -n 1 -r
+echo    # Move to a new line
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "Installation cancelled."
+    exit 1
+fi
+
 rm -fr "$CONFIG_DIR/nvim"
-cp -fr config/nvim "$CONFIG_DIR"
+cp -fr config/nvim "$CONFIG_DIR/nvim"
