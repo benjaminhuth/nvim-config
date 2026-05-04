@@ -73,7 +73,7 @@ return {
   {
     "mason-org/mason-lspconfig.nvim",
     opts = {
-        ensure_installed = { "clangd", "pylsp", "neocmakelsp", "bashls" },
+        ensure_installed = { "clangd", "pylsp", "neocmake", "bashls" },
     },
     dependencies = {
       { "mason-org/mason.nvim", opts = {} },
